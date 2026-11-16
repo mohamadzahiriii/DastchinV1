@@ -26,6 +26,3 @@ export function getTypedSupabaseClient(): TypedSupabaseClient {
 
   return client;
 }
-
-
-export { getTypedSupabaseClient }
