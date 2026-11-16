@@ -2,7 +2,9 @@
 
 import { Heart } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/lib/auth/auth-context';
 import { useFavorites } from '@/hooks/use-favorites';
+import { useFavoritesSupabase } from '@/hooks/use-favorites-supabase';
 import { cn } from '@/lib/utils';
 
 type FavoriteButtonProps = {
@@ -12,7 +14,14 @@ type FavoriteButtonProps = {
 };
 
 export function FavoriteButton({ id, label, className }: FavoriteButtonProps) {
-  const { isFavorite, toggle } = useFavorites();
+  const { isAuthenticated } = useAuth();
+  const localFavs = useFavorites();
+  const supabaseFavs = useFavoritesSupabase();
+
+  const { isFavorite, toggle } = isAuthenticated
+    ? supabaseFavs
+    : { isFavorite: localFavs.isFavorite, toggle: localFavs.toggle };
+
   const active = isFavorite(id);
 
   return (

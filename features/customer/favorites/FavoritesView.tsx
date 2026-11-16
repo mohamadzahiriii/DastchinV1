@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth/auth-context';
 import { useFavorites } from '@/hooks/use-favorites';
+import { useFavoritesSupabase } from '@/hooks/use-favorites-supabase';
 import { ProductCard } from '@/components/shared/ProductCard';
 import { StoreCard } from '@/components/shared/StoreCard';
 import { ButtonLink } from '@/components/shared/ButtonLink';
@@ -11,7 +13,11 @@ import { products } from '@/data/products';
 import { stores } from '@/data/stores';
 
 export function FavoritesView() {
-  const { ids } = useFavorites();
+  const { isAuthenticated } = useAuth();
+  const localFavs = useFavorites();
+  const supabaseFavs = useFavoritesSupabase();
+
+  const ids = isAuthenticated ? supabaseFavs.ids : localFavs.ids;
   const savedProducts = products.filter((p) => ids.includes(p.id));
   const savedStores = stores.filter((s) => ids.includes(s.id));
   const empty = savedProducts.length === 0 && savedStores.length === 0;
@@ -19,7 +25,13 @@ export function FavoritesView() {
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-12 md:px-8">
       <PageHeader title="علاقه‌مندی‌ها" description="محصولات و فروشگاه‌هایی که ذخیره کرده‌اید." />
-      <DemoNotice>علاقه‌مندی‌ها فعلاً فقط در همین مرورگر ذخیره می‌شوند و با حساب کاربری شما همگام نیستند.</DemoNotice>
+      {!isAuthenticated && (
+        <DemoNotice>
+          علاقه‌مندی‌ها فعلاً فقط در همین مرورگر ذخیره می‌شوند.{' '}
+          <Link href="/login" className="font-medium text-teal-200 hover:underline">وارد شوید</Link>
+          {' '}تا ذخیره شوند.
+        </DemoNotice>
+      )}
 
       {empty ? (
         <EmptyState

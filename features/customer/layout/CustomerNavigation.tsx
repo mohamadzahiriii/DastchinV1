@@ -2,15 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Heart, ShoppingBag, UserRound } from 'lucide-react';
+import { Heart, ShoppingBag, UserRound, LogIn } from 'lucide-react';
 import { Logo } from '@/components/shared/Logo';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { customerNav, customerBottomNav } from '@/config/navigation';
 import { isNavActive } from '@/lib/nav';
+import { useAuth } from '@/lib/auth/auth-context';
 import { cn } from '@/lib/utils';
 
 export function CustomerHeader() {
   const pathname = usePathname();
+  const { isAuthenticated, loading } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 border-b border-ink-800/80 bg-ink-950/90 backdrop-blur-xl">
@@ -45,7 +47,17 @@ export function CustomerHeader() {
         <div className="ms-auto flex items-center gap-1 md:ms-0">
           <IconLink href="/favorites" label="علاقه‌مندی‌ها" icon={Heart} active={pathname === '/favorites'} />
           <IconLink href="/cart" label="سبد خرید" icon={ShoppingBag} active={pathname === '/cart'} />
-          <IconLink href="/profile" label="حساب کاربری" icon={UserRound} active={pathname === '/profile'} className="hidden md:flex" />
+          {loading ? null : isAuthenticated ? (
+            <IconLink href="/profile" label="حساب کاربری" icon={UserRound} active={pathname === '/profile'} className="hidden md:flex" />
+          ) : (
+            <Link
+              href="/login"
+              className="flex h-10 items-center gap-2 rounded-full bg-saffron-400/15 px-4 text-sm font-medium text-saffron-300 transition-colors hover:bg-saffron-400/25"
+            >
+              <LogIn className="h-4 w-4" />
+              ورود
+            </Link>
+          )}
         </div>
       </div>
 
