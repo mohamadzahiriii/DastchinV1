@@ -25,6 +25,7 @@ import {
   Grid2x2,
   CircleDollarSign,
   FileBadge,
+  MapPin,
 } from 'lucide-react';
 
 export type NavItem = {
@@ -81,6 +82,7 @@ export const adminNav: NavItem[] = [
   { href: '/admin/delivery', label: 'ارسال', icon: Truck },
   { href: '/admin/coupons', label: 'کوپن‌ها', icon: FileBadge },
   { href: '/admin/complaints', label: 'شکایات و پشتیبانی', icon: Headset },
+  { href: '/admin/locations', label: 'مکان و محله‌ها', icon: MapPin },
   { href: '/admin/analytics', label: 'تحلیل و گزارش', icon: Newspaper },
   { href: '/admin/settings', label: 'تنظیمات', icon: Settings },
 ];

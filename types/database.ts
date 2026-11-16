@@ -29,6 +29,16 @@ export type Database = {
           email: string | null;
           avatar_url: string | null;
           account_status: AccountStatus;
+          preferred_city: string | null;
+          preferred_district: string | null;
+          preferred_neighborhood: string | null;
+          preferred_neighborhood_slug: string | null;
+          approx_latitude: number | null;
+          approx_longitude: number | null;
+          precise_latitude: number | null;
+          precise_longitude: number | null;
+          location_method: string | null;
+          location_confirmed_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -39,6 +49,16 @@ export type Database = {
           email?: string | null;
           avatar_url?: string | null;
           account_status?: AccountStatus;
+          preferred_city?: string | null;
+          preferred_district?: string | null;
+          preferred_neighborhood?: string | null;
+          preferred_neighborhood_slug?: string | null;
+          approx_latitude?: number | null;
+          approx_longitude?: number | null;
+          precise_latitude?: number | null;
+          precise_longitude?: number | null;
+          location_method?: string | null;
+          location_confirmed_at?: string | null;
         };
         Update: {
           full_name?: string | null;
@@ -46,6 +66,16 @@ export type Database = {
           email?: string | null;
           avatar_url?: string | null;
           account_status?: AccountStatus;
+          preferred_city?: string | null;
+          preferred_district?: string | null;
+          preferred_neighborhood?: string | null;
+          preferred_neighborhood_slug?: string | null;
+          approx_latitude?: number | null;
+          approx_longitude?: number | null;
+          precise_latitude?: number | null;
+          precise_longitude?: number | null;
+          location_method?: string | null;
+          location_confirmed_at?: string | null;
         };
       };
 
@@ -396,6 +426,90 @@ export type Database = {
           status?: TicketStatus;
           priority?: TicketPriority;
         };
+      };
+
+      location_neighborhoods: {
+        Row: {
+          id: string;
+          city: string;
+          city_slug: string;
+          district: string | null;
+          district_slug: string | null;
+          neighborhood: string;
+          neighborhood_slug: string;
+          latitude: number | null;
+          longitude: number | null;
+          is_active: boolean;
+          display_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          city: string;
+          city_slug: string;
+          district?: string | null;
+          district_slug?: string | null;
+          neighborhood: string;
+          neighborhood_slug: string;
+          latitude?: number | null;
+          longitude?: number | null;
+          is_active?: boolean;
+          display_order?: number;
+        };
+        Update: {
+          city?: string;
+          city_slug?: string;
+          district?: string | null;
+          district_slug?: string | null;
+          neighborhood?: string;
+          neighborhood_slug?: string;
+          latitude?: number | null;
+          longitude?: number | null;
+          is_active?: boolean;
+          display_order?: number;
+        };
+      };
+
+      location_config: {
+        Row: {
+          id: number;
+          nearby_threshold_km: number;
+          pickup_max_distance_km: number;
+          delivery_max_distance_km: number;
+          default_city: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          nearby_threshold_km?: number;
+          pickup_max_distance_km?: number;
+          delivery_max_distance_km?: number;
+          default_city?: string;
+        };
+        Update: {
+          nearby_threshold_km?: number;
+          pickup_max_distance_km?: number;
+          delivery_max_distance_km?: number;
+          default_city?: string;
+        };
+      };
+
+      otp_attempts: {
+        Row: {
+          id: string;
+          phone_hash: string;
+          attempt_type: string;
+          success: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          phone_hash: string;
+          attempt_type: string;
+          success?: boolean;
+        };
+        Update: {};
       };
     };
     Views: Record<string, never>;

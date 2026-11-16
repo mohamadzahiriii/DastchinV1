@@ -1,13 +1,19 @@
+'use client';
+
 import Link from 'next/link';
-import { MapPin, Bike, Store as StoreIcon } from 'lucide-react';
+import { MapPin, Bike, Store as StoreIcon, Navigation } from 'lucide-react';
 import { Rating } from '@/components/shared/Rating';
 import { getCategory, productsForStore } from '@/data/lookup';
 import { formatNumber, formatToman } from '@/lib/format';
+import { useLocation } from '@/lib/location/location-context';
 import type { Store } from '@/types';
 
 export function StoreCard({ store }: { store: Store }) {
   const category = getCategory(store.categoryId);
   const available = productsForStore(store.id).length;
+  const { distanceLabelForStore } = useLocation();
+  const distanceLabel = distanceLabelForStore(store);
+  const hasDistance = distanceLabel !== 'نامشخص';
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-ink-800 bg-ink-900 transition-all duration-300 hover:-translate-y-1 hover:border-ink-700">
@@ -22,6 +28,12 @@ export function StoreCard({ store }: { store: Store }) {
         <span className="absolute bottom-3 end-3 rounded-md bg-ink-950/80 px-2 py-1 text-[11px] text-ink-100 backdrop-blur">
           {category?.name}
         </span>
+        {hasDistance && (
+          <span className="absolute bottom-3 start-3 inline-flex items-center gap-1 rounded-md bg-saffron-400/90 px-2 py-1 text-[11px] font-medium text-ink-950 backdrop-blur">
+            <Navigation className="h-3 w-3" aria-hidden />
+            {distanceLabel}
+          </span>
+        )}
       </div>
       <div className="flex flex-1 flex-col gap-3 p-5">
         <div className="flex items-start justify-between gap-3">

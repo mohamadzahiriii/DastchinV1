@@ -11,7 +11,10 @@ export function getSupabaseBrowserClient(): SupabaseClient {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !anonKey) {
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
+    client = createClient('https://placeholder.supabase.co', 'placeholder-anon-key', {
+      auth: { persistSession: false },
+    });
+    return client;
   }
 
   client = createClient(url, anonKey, {

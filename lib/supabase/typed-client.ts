@@ -13,7 +13,12 @@ export function getTypedSupabaseClient(): TypedSupabaseClient {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !anonKey) {
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
+    // During static prerendering env vars may not be available.
+    // Return a client with placeholder values — it won't be used at runtime.
+    client = createClient('https://placeholder.supabase.co', 'placeholder-anon-key', {
+      auth: { persistSession: false },
+    });
+    return client;
   }
 
   client = createClient(url, anonKey, {

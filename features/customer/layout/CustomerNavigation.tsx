@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Heart, ShoppingBag, UserRound, LogIn } from 'lucide-react';
 import { Logo } from '@/components/shared/Logo';
 import { SearchBar } from '@/components/shared/SearchBar';
+import { LocationSwitcher } from '@/features/location/LocationSwitcher';
 import { customerNav, customerBottomNav } from '@/config/navigation';
 import { isNavActive } from '@/lib/nav';
 import { useAuth } from '@/lib/auth/auth-context';
@@ -40,6 +41,10 @@ export function CustomerHeader() {
           })}
         </nav>
 
+        <div className="hidden md:block">
+          <LocationSwitcher />
+        </div>
+
         <div className="hidden flex-1 justify-center md:flex">
           <SearchBar className="max-w-md" />
         </div>
@@ -62,6 +67,9 @@ export function CustomerHeader() {
       </div>
 
       <div className="px-4 pb-3 md:hidden">
+        <div className="mb-2">
+          <LocationSwitcher />
+        </div>
         <SearchBar />
       </div>
     </header>

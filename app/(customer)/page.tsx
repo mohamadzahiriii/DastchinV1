@@ -1,3 +1,5 @@
+'use client';
+
 import { HomeHero } from '@/features/customer/home/HomeHero';
 import {
   DailyOpportunities,
@@ -6,22 +8,28 @@ import {
   HowItWorks,
   LimitedAvailability,
   MerchantCallout,
-  NearbyStores,
+  NearbyStoresSection,
+  NearbyProductsSection,
+  AreaDiscountsSection,
+  TodayPickupSection,
+  OutOfRangeStoresSection,
   NewArrivals,
   PopularCategories,
-  RecommendedProducts,
 } from '@/features/customer/home/HomeSections';
 
 export default function HomePage() {
   return (
     <>
       <HomeHero />
-      <DailyOpportunities />
+      <NearbyStoresSection />
+      <NearbyProductsSection />
+      <AreaDiscountsSection />
       <PopularCategories />
-      <NearbyStores />
       <LimitedAvailability />
-      <RecommendedProducts />
+      <TodayPickupSection />
+      <DailyOpportunities />
       <FeaturedMerchants />
+      <OutOfRangeStoresSection />
       <EditorialBanners />
       <NewArrivals />
       <HowItWorks />

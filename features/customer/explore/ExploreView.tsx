@@ -1,13 +1,23 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { SlidersHorizontal, X, MapPin } from 'lucide-react';
 import { ProductCard } from '@/components/shared/ProductCard';
 import { EmptyState } from '@/components/shared/Feedback';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { categories } from '@/data/categories';
 import { stores } from '@/data/stores';
-import { defaultFilters, filterProducts, type ExploreFilters, type SortKey } from '@/features/customer/explore/filter-products';
+import {
+  defaultFilters,
+  filterProducts,
+  type ExploreFilters,
+  type SortKey,
+  type DistanceFilter,
+  type LocationFilterContext,
+} from '@/features/customer/explore/filter-products';
+import { useLocation } from '@/lib/location/location-context';
+import { LocationSwitcher } from '@/features/location/LocationSwitcher';
+import { getNeighborhoodsByCity } from '@/config/location';
 import { formatNumber, formatToman } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { CategoryId, Fulfillment } from '@/types';
@@ -16,6 +26,7 @@ const priceOptions = [0, 100000, 150000, 250000, 500000];
 const discountOptions = [0, 20, 40, 60];
 const sortOptions: { value: SortKey; label: string }[] = [
   { value: 'recommended', label: 'پیشنهادی' },
+  { value: 'distance', label: 'نزدیک‌ترین' },
   { value: 'discount', label: 'بیشترین تخفیف' },
   { value: 'price-asc', label: 'کمترین قیمت' },
   { value: 'price-desc', label: 'بیشترین قیمت' },
@@ -23,19 +34,43 @@ const sortOptions: { value: SortKey; label: string }[] = [
   { value: 'remaining', label: 'کمترین موجودی' },
 ];
 
+const distanceOptions: { value: DistanceFilter; label: string }[] = [
+  { value: 'all', label: 'همه' },
+  { value: 'nearby', label: 'نزدیک‌ترین' },
+  { value: 'available', label: 'قابل دریافت' },
+  { value: 'delivery-only', label: 'فقط ارسالی' },
+  { value: 'out-of-range', label: 'خارج از محدوده' },
+];
+
+const neighborhoods = getNeighborhoodsByCity('tehran');
+
 type ExploreViewProps = {
   initialQuery: string;
   initialCategory: CategoryId | 'all';
 };
 
 export function ExploreView({ initialQuery, initialCategory }: ExploreViewProps) {
+  const { location, config } = useLocation();
   const [filters, setFilters] = useState<ExploreFilters>({
     ...defaultFilters,
     query: initialQuery,
     category: initialCategory,
   });
 
-  const results = useMemo(() => filterProducts(filters), [filters]);
+  const locContext: LocationFilterContext | undefined = useMemo(() => {
+    if (!location) return undefined;
+    return {
+      latitude: location.latitude,
+      longitude: location.longitude,
+      config: {
+        nearbyThresholdKm: config.nearbyThresholdKm,
+        pickupMaxDistanceKm: config.pickupMaxDistanceKm,
+        deliveryMaxDistanceKm: config.deliveryMaxDistanceKm,
+      },
+    };
+  }, [location, config]);
+
+  const results = useMemo(() => filterProducts(filters, locContext), [filters, locContext]);
   const update = (patch: Partial<ExploreFilters>) => setFilters((prev) => ({ ...prev, ...patch }));
   const activeCount = [
     filters.category !== 'all',
@@ -43,6 +78,9 @@ export function ExploreView({ initialQuery, initialCategory }: ExploreViewProps)
     filters.maxPrice > 0,
     filters.minDiscount > 0,
     filters.storeId !== 'all',
+    filters.neighborhoodSlug !== 'all',
+    filters.distance !== 'all',
+    filters.inStock,
   ].filter(Boolean).length;
 
   return (
@@ -64,6 +102,29 @@ export function ExploreView({ initialQuery, initialCategory }: ExploreViewProps)
           )}
         </div>
 
+        {!location && (
+          <div className="rounded-xl border border-saffron-400/20 bg-saffron-400/5 px-4 py-3">
+            <p className="mb-2 text-xs leading-relaxed text-ink-300">
+              برای فیلتر بر اساس فاصله، محدوده خود را انتخاب کنید.
+            </p>
+            <LocationSwitcher />
+          </div>
+        )}
+
+        {location && (
+          <FilterGroup label="فاصله">
+            {distanceOptions.map((opt) => (
+              <ChipButton
+                key={opt.value}
+                active={filters.distance === opt.value}
+                onClick={() => update({ distance: opt.value })}
+              >
+                {opt.label}
+              </ChipButton>
+            ))}
+          </FilterGroup>
+        )}
+
         <FilterGroup label="دسته‌بندی">
           <ChipButton active={filters.category === 'all'} onClick={() => update({ category: 'all' })}>همه</ChipButton>
           {categories.map((c) => (
@@ -77,14 +138,19 @@ export function ExploreView({ initialQuery, initialCategory }: ExploreViewProps)
           {(
             [
               ['all', 'همه'],
-              ['pickup', 'تحویل حضوری'],
-              ['delivery', 'ارسال'],
+              ['pickup', 'قابل دریافت حضوری'],
+              ['delivery', 'قابل ارسال'],
             ] as [Fulfillment | 'all', string][]
           ).map(([value, label]) => (
             <ChipButton key={value} active={filters.fulfillment === value} onClick={() => update({ fulfillment: value })}>
               {label}
             </ChipButton>
           ))}
+        </FilterGroup>
+
+        <FilterGroup label="موجودی">
+          <ChipButton active={!filters.inStock} onClick={() => update({ inStock: false })}>همه</ChipButton>
+          <ChipButton active={filters.inStock} onClick={() => update({ inStock: true })}>موجود</ChipButton>
         </FilterGroup>
 
         <FilterGroup label="حداکثر قیمت">
@@ -102,6 +168,20 @@ export function ExploreView({ initialQuery, initialCategory }: ExploreViewProps)
             </ChipButton>
           ))}
         </FilterGroup>
+
+        <label className="flex flex-col gap-2">
+          <span className="text-xs font-medium text-ink-300">محله</span>
+          <select
+            value={filters.neighborhoodSlug}
+            onChange={(e) => update({ neighborhoodSlug: e.target.value })}
+            className="h-10 rounded-xl border border-ink-700 bg-ink-900 px-3 text-sm text-ink-50 focus:border-saffron-400/60 focus:outline-none"
+          >
+            <option value="all">همه محله‌ها</option>
+            {neighborhoods.map((n) => (
+              <option key={n.id} value={n.neighborhoodSlug}>{n.neighborhood}</option>
+            ))}
+          </select>
+        </label>
 
         <label className="flex flex-col gap-2">
           <span className="text-xs font-medium text-ink-300">فروشگاه</span>
@@ -141,26 +221,30 @@ export function ExploreView({ initialQuery, initialCategory }: ExploreViewProps)
 
         <p className="text-sm text-ink-400" aria-live="polite">
           {formatNumber(results.length)} محصول پیدا شد
+          {location && ` در محدوده ${location.neighborhood}`}
         </p>
 
         {results.length > 0 ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 2xl:grid-cols-3">
-            {results.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {results.map((item) => (
+              <ProductCard key={item.product.id} product={item.product} />
             ))}
           </div>
         ) : (
           <EmptyState
-            title="محصولی با این فیلترها پیدا نشد"
-            description="فیلترها را کم‌تر کنید یا عبارت دیگری جستجو کنید. محصولات جدید هر روز اضافه می‌شوند."
+            title="در محدوده انتخابی شما محصولی پیدا نشد"
+            description="فیلترها را کم‌تر کنید یا محدوده دیگری را انتخاب کنید. محصولات جدید هر روز اضافه می‌شوند."
             action={
-              <button
-                type="button"
-                onClick={() => setFilters(defaultFilters)}
-                className={cn('h-10 rounded-full bg-saffron-400 px-5 text-sm font-semibold text-ink-950 transition-colors hover:bg-saffron-300')}
-              >
-                پاک کردن همه فیلترها
-              </button>
+              <div className="flex flex-col items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setFilters(defaultFilters)}
+                  className="h-10 rounded-full bg-saffron-400 px-5 text-sm font-semibold text-ink-950 transition-colors hover:bg-saffron-300"
+                >
+                  پاک کردن همه فیلترها
+                </button>
+                <LocationSwitcher />
+              </div>
             }
           />
         )}

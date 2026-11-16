@@ -23,7 +23,10 @@ export type Store = {
   name: string;
   categoryId: CategoryId;
   neighborhood: string;
+  neighborhoodSlug: string;
   address: string;
+  latitude: number;
+  longitude: number;
   rating: number;
   ratingCount: number;
   coverImage: string;
@@ -33,6 +36,7 @@ export type Store = {
   deliveryEnabled: boolean;
   deliveryFee: number;
   deliveryAreas: string[];
+  deliveryMaxDistanceKm: number;
   pickupInstructions: string;
   featured: boolean;
   joinedAt: string;
